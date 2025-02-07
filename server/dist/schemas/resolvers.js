@@ -41,6 +41,24 @@ const resolvers = {
             // 5. Return the token and user
             return { token, user };
         },
+        logout: async (_, __, context) => {
+            try {
+                if (!context.res) {
+                    throw new Error("Response object is not available in context");
+                }
+                // Clear the JWT token from cookies
+                context.res.clearCookie("token", {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "Strict",
+                });
+                return true;
+            }
+            catch (error) {
+                console.error("Logout error:", error);
+                return false;
+            }
+        },
     },
 };
 export default resolvers;

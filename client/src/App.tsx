@@ -7,6 +7,7 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from "react";
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -16,8 +17,6 @@ const httpLink = createHttpLink({
 
 const authLink = setContext((_, { headers }) => {
     const token = localStorage.getItem('id_token');
-    console.log("📡 Apollo Client - Token from localStorage:", token); // Debugging log
-
     return {
         headers: {
             ...headers,
@@ -33,25 +32,32 @@ const client = new ApolloClient({
 
 function App() {
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check login status on page load
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("id_token"));
+  }, []);
 
   return (
     <ApolloProvider client={client}>
       <div>
         <Header />
         <main>
-          {/* Show only the link that the user is NOT on */}
-          {location.pathname !== "/login" && (
-            <Link to="/login">
-              <p>Login</p>
-            </Link>
-          )}
-          {location.pathname !== "/signup" && (
-            <Link to="/signup">
-              <p>Signup</p>
-            </Link>
+        <Outlet />
+          {/* Hide Login/Signup links if user is logged in OR on the Dashboard */}
+          {!isLoggedIn && location.pathname !== "/me" && location.pathname !== "/dashboard" && (
+            <>
+              {location.pathname !== "/login" && (
+                <Link to="/login"><p>Login</p></Link>
+              )}
+              {location.pathname !== "/signup" && (
+                <Link to="/signup"><p>Signup</p></Link>
+              )}
+            </>
           )}
 
-          <Outlet />
+          
         </main>
         <Footer />
       </div>
