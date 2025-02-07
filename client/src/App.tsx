@@ -7,6 +7,7 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 
 
@@ -34,6 +35,13 @@ function App() {
     <ApolloProvider client={client}>
       <div>
       <h1> Farkle Online </h1>
+        <Link to='/login'>
+          <p>Login</p>
+        </Link>
+        <Link to='/signup'>
+          <p>Signup</p>
+      </Link>
+      
         {/* Main content area */}
          <main>
           {/* Any child routes will render here */}
