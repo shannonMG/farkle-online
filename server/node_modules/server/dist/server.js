@@ -9,10 +9,10 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+import { verifyToken } from './utils/auth.js';
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    // Now properly typed
 });
 const startApolloServer = async () => {
     try {
@@ -29,8 +29,17 @@ const startApolloServer = async () => {
         // Serve production client
         if (process.env.NODE_ENV === 'production') {
             app.use(express.static(path.join(__dirname, '../../client/dist')));
-            app.get('*', (_req, res) => {
-                res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+            app.get('*', (_req) => {
+                context: async ({ req }) => {
+                    const token = req.headers.authorization || "";
+                    try {
+                        const user = verifyToken(token.replace("Bearer ", ""));
+                        return { user };
+                    }
+                    catch (error) {
+                        return {};
+                    }
+                };
             });
         }
         app.listen(PORT, () => {

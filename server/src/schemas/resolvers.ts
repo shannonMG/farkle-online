@@ -3,13 +3,32 @@ import { User } from './../models/User.js';
 import { AuthenticationError } from "apollo-server-express";
 import dotenv from "dotenv";
 import { signToken } from '../utils/auth.js'
+import {Types} from 'mongoose'
 dotenv.config();
 
 
+interface User {
+  _id: Types.ObjectId;
+  username: string;
+  email: string;
+  password: string;
+  role: string;
+}
+interface Context {
+  user?: User;
+}
 
 const resolvers = {
     Query: {
-        users: async () => await User.find(),
+        users: async () => {await User.find()},
+      
+        me: async (_parent: any, _args: any, context: Context): Promise<User | null> => {
+          if (context.user) {
+            return await User.findOne({ _id: context.user._id });
+          }
+          throw new AuthenticationError('You must be logged in to access this data.');
+    
+        },
     },
     Mutation: {
         register: async (_: any, { username, email, password }: { username: string; email: string; password: string }) => {

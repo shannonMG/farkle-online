@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
 dotenv.config();
+const SECRET_KEY = process.env.JWT_SECRET_KEY;
 export const authenticateToken = ({ req }) => {
     let token = req.body.token || req.query.token || req.headers.authorization;
     if (req.headers.authorization) {
@@ -38,3 +39,9 @@ export class AuthenticationError extends GraphQLError {
     }
 }
 ;
+export const verifyToken = (token) => {
+    if (!SECRET_KEY)
+        throw new Error("Missing JWT_SECRET_KEY");
+    console.log("🔑 Decoded Token:", jwt.decode(token));
+    return jwt.verify(token, SECRET_KEY);
+};

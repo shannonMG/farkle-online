@@ -6,7 +6,13 @@ import { signToken } from '../utils/auth.js';
 dotenv.config();
 const resolvers = {
     Query: {
-        users: async () => await User.find(),
+        users: async () => { await User.find(); },
+        me: async (_parent, _args, context) => {
+            if (context.user) {
+                return await User.findOne({ _id: context.user._id });
+            }
+            throw new AuthenticationError('You must be logged in to access this data.');
+        },
     },
     Mutation: {
         register: async (_, { username, email, password }) => {

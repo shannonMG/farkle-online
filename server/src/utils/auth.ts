@@ -3,6 +3,7 @@ import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
 
 dotenv.config();
+const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 export const authenticateToken = ({ req }: any) => {
   let token = req.body.token || req.query.token || req.headers.authorization;
@@ -47,4 +48,15 @@ export class AuthenticationError extends GraphQLError {
     super(message, undefined, undefined, undefined, ['UNAUTHENTICATED']);
     Object.defineProperty(this, 'name', { value: 'AuthenticationError' });
   }
+};
+
+
+
+
+export const verifyToken = (token: string) => {
+  if (!SECRET_KEY) throw new Error("Missing JWT_SECRET_KEY");
+  console.log("🔑 Decoded Token:", jwt.decode(token));
+
+  return jwt.verify(token, SECRET_KEY);
+  
 };
