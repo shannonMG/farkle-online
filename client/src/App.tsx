@@ -8,7 +8,8 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-
+import Header from './components/Header';
+import Footer from './components/Footer'
 
 
 const httpLink = createHttpLink({
@@ -34,20 +35,20 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <div>
-      <h1> Farkle Online </h1>
-        <Link to='/login'>
-          <p>Login</p>
-        </Link>
-        <Link to='/signup'>
-          <p>Signup</p>
-      </Link>
-      
-        {/* Main content area */}
-         <main>
-          {/* Any child routes will render here */}
-          <Outlet />
-        </main>
+        <Header />
+          
+          <main>
+            <Link to='/login'>
+              <p>Login</p>
+            </Link>
+            <Link to='/signup'>
+              <p>Signup</p>
+            </Link>
+        
+            <Outlet />
+           </main>
 
+        <Footer/>
       </div>
     </ApolloProvider>
   );
