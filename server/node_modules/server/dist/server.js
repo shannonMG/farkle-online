@@ -11,7 +11,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const server = new ApolloServer({
     typeDefs,
-    resolvers, // Now properly typed
+    resolvers,
+    // Now properly typed
 });
 const startApolloServer = async () => {
     try {

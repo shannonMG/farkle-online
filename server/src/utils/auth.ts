@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export const authenticateToken = ({ req }: any) => {
@@ -27,12 +28,19 @@ export const authenticateToken = ({ req }: any) => {
   return req;
 };
 
-export const signToken = (username: string, _id: unknown, role: string) => {
+export const signToken = (username: string, _id: string, role: string) => {
   const payload = { username, _id, role };
-  const secretKey: any = process.env.JWT_SECRET_KEY;
+  
+  // Ensure that the secret key is properly loaded
+  const secretKey = process.env.JWT_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("JWT_SECRET_KEY is missing in environment variables.");
+  }
 
+  // Sign the token
   return jwt.sign({ data: payload }, secretKey, { expiresIn: '2h' });
-};
+}
+
 
 export class AuthenticationError extends GraphQLError {
   constructor(message: string) {

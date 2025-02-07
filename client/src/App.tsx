@@ -6,11 +6,9 @@ import {
     createHttpLink,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { Outlet } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import Header from './components/Header';
-import Footer from './components/Footer'
-
+import Footer from './components/Footer';
 
 const httpLink = createHttpLink({
     uri: '/graphql',
@@ -32,23 +30,28 @@ const client = new ApolloClient({
 });
 
 function App() {
+  const location = useLocation();
+
   return (
     <ApolloProvider client={client}>
       <div>
         <Header />
-          
-          <main>
-            <Link to='/login'>
+        <main>
+          {/* Show only the link that the user is NOT on */}
+          {location.pathname !== "/login" && (
+            <Link to="/login">
               <p>Login</p>
             </Link>
-            <Link to='/signup'>
+          )}
+          {location.pathname !== "/signup" && (
+            <Link to="/signup">
               <p>Signup</p>
             </Link>
-        
-            <Outlet />
-           </main>
+          )}
 
-        <Footer/>
+          <Outlet />
+        </main>
+        <Footer />
       </div>
     </ApolloProvider>
   );

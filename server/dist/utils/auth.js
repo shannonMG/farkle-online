@@ -23,7 +23,12 @@ export const authenticateToken = ({ req }) => {
 };
 export const signToken = (username, _id, role) => {
     const payload = { username, _id, role };
+    // Ensure that the secret key is properly loaded
     const secretKey = process.env.JWT_SECRET_KEY;
+    if (!secretKey) {
+        throw new Error("JWT_SECRET_KEY is missing in environment variables.");
+    }
+    // Sign the token
     return jwt.sign({ data: payload }, secretKey, { expiresIn: '2h' });
 };
 export class AuthenticationError extends GraphQLError {
