@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express';
 const gameTypeDefs = gql`
   type Mutation {
     addGame(playerUsernames: [String]!): Game
+    leaveGame(gameId: ID!): Game
   }
 
   type Query{

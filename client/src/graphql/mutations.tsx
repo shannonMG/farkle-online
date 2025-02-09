@@ -44,3 +44,16 @@ export const ADD_GAME = gql`
     }
   }
 `;
+
+export const LEAVE_GAME = gql`
+  mutation LeaveGame($gameId: ID!) {
+    leaveGame(gameId: $gameId) {
+      _id
+      status
+      participants {
+        _id
+        username
+      }
+    }
+  }
+`;

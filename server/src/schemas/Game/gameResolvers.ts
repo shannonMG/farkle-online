@@ -26,6 +26,31 @@ const gameResolvers = {
   },
 
   Mutation: {
+    leaveGame: async (_: any, { gameId }: { gameId: string }, context: { user: any }) => {
+      if (!context.user) {
+        throw new GraphQLError("Authentication required.");
+      }
+
+      try {
+        const game = await Game.findById(gameId);
+        if (!game) {
+          throw new GraphQLError("Game not found.");
+        }
+
+        // ✅ Remove the user from participants
+        game.participants = game.participants.filter(
+          (participantId) => participantId.toString() !== context.user._id.toString()
+        );
+
+        await game.save();
+
+        return game;
+      } catch (error) {
+        console.error("❌ Error leaving game:", error);
+        throw new GraphQLError("Failed to leave game.");
+      }
+    },
+    
     addGame: async (_: any, { playerUsernames }: { playerUsernames: string[] }) => {
       try {
         // Fetch user _id's based on their usernames
