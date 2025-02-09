@@ -31,3 +31,16 @@ export const REGISTER_USER = gql`
     }
   }
 `
+
+export const ADD_GAME = gql`
+  mutation AddGame($playerUsernames: [String!]!) {
+    addGame(playerUsernames: $playerUsernames) {
+      _id
+      status
+      participants {
+        _id
+        username
+      }
+    }
+  }
+`;

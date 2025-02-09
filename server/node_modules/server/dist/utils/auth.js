@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
+import { User } from '../models/User.js';
 dotenv.config();
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 export const authenticateToken = ({ req }) => {
@@ -39,6 +40,22 @@ export class AuthenticationError extends GraphQLError {
     }
 }
 ;
+export const getUserFromToken = async (token) => {
+    try {
+        if (!token)
+            return null;
+        if (!SECRET_KEY) {
+            throw new Error("JWT_SECRET_KEY is missing in environment variables.");
+        }
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const user = await User.findById(decoded.userId);
+        return user;
+    }
+    catch (err) {
+        console.error("❌ Invalid token:", err);
+        return null;
+    }
+};
 export const verifyToken = (token) => {
     if (!SECRET_KEY)
         throw new Error("Missing JWT_SECRET_KEY");

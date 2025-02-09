@@ -1,9 +1,13 @@
 import { gql } from 'apollo-server-express';
 
 const gameTypeDefs = gql`
-type Mutation {
+  type Mutation {
     addGame(playerUsernames: [String]!): Game
   }
+
+  type Query{
+    gamesByUser: [Game!]!
+    }
   
   type Game {
     _id: ID!

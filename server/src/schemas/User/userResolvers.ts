@@ -28,7 +28,16 @@ interface Context {
 
 const userResolvers = {
     Query: {
-        users: async () => {await User.find()},
+      users: async (): Promise<IUser[]> => {
+        try {
+          const allUsers = await User.find();
+          console.log("✅ Retrieved users:", allUsers);
+          return allUsers;
+        } catch (error) {
+          console.error("❌ Error fetching users:", error);
+          throw new GraphQLError("Failed to fetch users.");
+        }
+      },
       
         me: async (_parent: any, _args: any, context: Context): Promise<User | null> => {
           if (context.user) {
@@ -39,34 +48,28 @@ const userResolvers = {
         },
     },
     Mutation: {
-      register: async (
-        _parent: any,
-        { username, email, password }: { username: string; email: string; password: string }
-      ): Promise<{ token: string; user: IUser }> => {
+      register: async (_parent: any, { username, email, password }: 
+        { username: string; email: string; password: string }): Promise<{ token: string; user: IUser }> => {
         try {
           console.log("🚀 Registering user:", username);
   
-          // Check if username or email already exists
+          // Check if user exists
           const existingUser = await User.findOne({ $or: [{ username }, { email }] });
           if (existingUser) {
             throw new GraphQLError("Username or email already in use.");
           }
   
-          // ✅ Ensure password hashing
-          const saltRounds = 10;
-          const hashedPassword = await bcrypt.hash(password, saltRounds);
-  
-          // ✅ Save user with hashed password
+          // ✅ NO manual password hashing here! The User model will hash it automatically.
           const newUser = new User({
             username,
             email,
-            password: hashedPassword, // ✅ Ensure hashed password is stored
+            password, // 🚀 Save password as plain text, model will hash it.
           });
   
           const savedUser = await newUser.save();
   
-          // ✅ Generate JWT token
-          const token = signToken(savedUser.username, savedUser._id.toString(), savedUser.role);
+          // Generate JWT
+          const token = signToken(savedUser.username, savedUser._id.toString(), savedUser.password);
   
           console.log("✅ Registration successful!");
           return { token, user: savedUser };
@@ -75,6 +78,7 @@ const userResolvers = {
           throw new GraphQLError("Registration failed.");
         }
       },
+  
       login: async (
         _parent: any,
         { username, password }: { username: string; password: string }
@@ -105,7 +109,7 @@ const userResolvers = {
         }
   
         // 4. Generate JWT token
-        const token = signToken(user.username, user._id.toString(), user.role);
+        const token = signToken(user.username, user._id.toString(), user.password);
   
         console.log("✅ Login successful!");
         return { token, user };

@@ -3,8 +3,28 @@ import {IUser} from "../../models/User";
 import {User} from "../../models/User.js";
 import { IGame } from "../../models/Game";
 import {Game} from "../../models/Game.js";
+import { GraphQLError } from "graphql";
+
 
 const gameResolvers = {
+  Query: {
+    gamesByUser: async (_parent: any, _args: any, context: { user: any }) => {
+      if (!context.user) {
+        throw new GraphQLError("Authentication required.");
+      }
+
+      try {
+        // ✅ Find games where the authenticated user is a participant
+        const userGames = await Game.find({ participants: context.user._id }).populate("participants");
+
+        return userGames;
+      } catch (error) {
+        console.error("❌ Error fetching user games:", error);
+        throw new GraphQLError("Failed to fetch user games.");
+      }
+    },
+  },
+
   Mutation: {
     addGame: async (_: any, { playerUsernames }: { playerUsernames: string[] }) => {
       try {

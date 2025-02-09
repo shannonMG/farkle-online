@@ -1,36 +1,31 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import { Document, Schema, model, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 
-// Define the User interface for TypeScript
 export interface IUser extends Document {
   _id: Types.ObjectId;
   username: string;
   email: string;
   password: string;
-  role: string;
   isCorrectPassword(password: string): Promise<boolean>;
 }
 
-// Create the schema
-const userSchema: Schema<IUser> = new Schema({
+const userSchema = new Schema<IUser>({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, default: "user" },
 });
 
-// Hash password before saving
+// ✅ Hash password before saving
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Define isCorrectPassword method
+// ✅ Define password comparison method
 userSchema.methods.isCorrectPassword = async function (password: string): Promise<boolean> {
   return bcrypt.compare(password, this.password);
 };
 
-// Export the User model
-export const User = mongoose.model<IUser>("User", userSchema);
+// ✅ Export the User model
+export const User = model<IUser>("User", userSchema);

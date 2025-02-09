@@ -9,3 +9,26 @@ export const GET_ME = gql`
     }
   }
 `;
+
+export const GET_USERS = gql`
+  query GetUsers {
+    users {
+      _id
+      username
+    }
+  }
+`;
+
+
+export const GET_GAMES_BY_USER = gql`
+  query GetGamesByUser {
+    gamesByUser {
+      _id
+      status
+      participants {
+        _id
+        username
+      }
+    }
+  }
+`;
