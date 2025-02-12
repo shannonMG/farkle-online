@@ -337,5 +337,5 @@ const gameResolvers = {
     
   },
 }
-
+export const { joinGame } = gameResolvers.Mutation;
 export default gameResolvers;

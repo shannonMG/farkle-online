@@ -7,10 +7,12 @@ import userResolvers from './User/userResolvers.js';
 import gameTypeDefs from './Game/gameTypeDefs.js';
 import gameResolvers from './Game/gameResolvers.js';
 
+import invitationTypeDefs from './Invitation/invitationTypeDefs.js'; 
+import invitationResolvers from './Invitation/invitationResolvers.js';
 // Combine typeDefs
-const typeDefs = mergeTypeDefs([userTypeDefs, gameTypeDefs]);
+const typeDefs = mergeTypeDefs([userTypeDefs, gameTypeDefs, invitationTypeDefs]);
 
 // Combine resolvers and explicitly type them
-const resolvers: IResolvers = mergeResolvers([userResolvers, gameResolvers]) as IResolvers;
+const resolvers: IResolvers = mergeResolvers([userResolvers, gameResolvers, invitationResolvers]) as IResolvers;
 
 export { typeDefs, resolvers };

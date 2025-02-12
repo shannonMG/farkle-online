@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 // Define an interface for the invitation document.
 export interface IInvitation extends Document {
-  gameId: mongoose.Types.ObjectId;      // Reference to the associated game.
+  gameId: string;      // Reference to the associated game.
   inviterId: mongoose.Types.ObjectId;   // Reference to the user who is sending the invitation.
   inviteeId: mongoose.Types.ObjectId;   // Reference to the user who is being invited.
   status: "pending" | "accepted" | "declined";  // Current status of the invitation.
@@ -12,7 +12,7 @@ export interface IInvitation extends Document {
 
 // Define the Invitation schema.
 const InvitationSchema: Schema = new Schema({
-  gameId: { type: Schema.Types.ObjectId, ref: "Game", required: true },
+  gameId: { type: String, ref: "Game", required: true },
   inviterId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   inviteeId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   status: { type: String, enum: ["pending", "accepted", "declined"], default: "pending", required: true },
