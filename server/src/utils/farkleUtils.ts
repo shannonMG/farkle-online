@@ -86,48 +86,48 @@ export function evaluateRoll(dice: number[]): { rollScore: number; scoringDiceCo
 
   return { rollScore: score, scoringDiceCount };
 }
-
 export function endTurn(game: IGame): IGame {
-  // Validate that currentTurn is set.
   if (!game.currentTurn) {
-    throw new Error("No current turn to end.");
+    throw new Error("No active turn to end.");
   }
 
-  // Find the index of the active (current) player.
+  // Find the current player
   const currentPlayerIndex = game.players.findIndex(
     (player) => player.userId.toString() === game.currentTurn!.playerId
   );
 
   if (currentPlayerIndex === -1) {
-    throw new Error("Active player not found in the game.");
+    throw new Error("Current player not found.");
   }
 
-  // Add the turn's score to the current player's total score.
+  // ✅ Ensure `rolls` exists before banking score
+  if (!game.currentTurn.rolls) {
+    game.currentTurn.rolls = [];
+  }
+
+  // ✅ Bank turnScore into totalScore
   game.players[currentPlayerIndex].totalScore += game.currentTurn.turnScore;
 
-  // Optionally, record an end-of-turn history entry.
-  // (You might want to include details such as the final dice roll, points earned, etc.)
-  const historyEntry = {
+  // ✅ Log the completed turn in history
+  game.history.push({
     turnNumber: game.history.length + 1,
     playerId: game.currentTurn.playerId,
     action: "endTurn",
-    diceRolled: game.currentTurn.dice,  // or include selected dice if applicable
+    diceRolled: game.currentTurn.dice,
     pointsEarned: game.currentTurn.turnScore,
     timestamp: new Date(),
-  };
-  game.history.push(historyEntry);
+  });
 
-  // Determine the index of the next player (circular order).
+  // ✅ Move to the next player
   const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length;
-
-  // Set up the next turn for the next player.
   game.currentTurn = {
     playerId: game.players[nextPlayerIndex].userId.toString(),
     rollCount: 0,
     dice: [],
     selectedDice: [],
     turnScore: 0,
-    diceRemaining: 6,  // Reset to 6 for a fresh turn (or adjust based on your rules)
+    diceRemaining: 6,
+    rolls: [] // ✅ Ensure new player starts with empty roll history
   };
 
   return game;

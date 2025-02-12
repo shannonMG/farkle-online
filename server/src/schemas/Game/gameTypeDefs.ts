@@ -11,14 +11,19 @@ const gameTypeDefs = gql`
         isActive: Boolean!
         }
 
-    # Define the CurrentTurn type.
+    type Roll {
+        diceRolled: [Int]!
+        pointsEarned: Int!
+        }
+
     type CurrentTurn {
-        playerId: String!    
+        playerId: ID!
         rollCount: Int!
-        dice: [Int!]!        
-        selectedDice: [Int!]! 
-        turnScore: Int!
-        diceRemaining: Int! 
+        dice: [Int]!
+        selectedDice: [Int]!
+        turnScore: Int!   # ✅ This accumulates all points in the turn
+        diceRemaining: Int!
+        rolls: [Roll]   # ✅ Track all rolls in the turn
         }
 
     # Define a HistoryEntry type.
@@ -65,6 +70,7 @@ const gameTypeDefs = gql`
         joinGame(input: JoinGameInput!): Game
         startGame(gameId: String!): Game
         rollDice(gameId: String!): Game
+        endTurn(gameId: ID!): Game
 
         }
      `

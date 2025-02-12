@@ -13,12 +13,17 @@ export interface IPlayer {
 // Define an interface for the current turn details.
 export interface ICurrentTurn {
   playerId: string;         // The player whose turn is in progress.
-  rollCount: number;        // Number of rolls the player has made this turn.
-  dice: number[];           // Array of dice values from the latest roll.
+  rollCount: number;        // Number of rolls in the current turn.
+  dice: number[];           // The last dice roll values.
   selectedDice: number[];   // Dice the player has chosen to bank for scoring.
-  turnScore: number; 
-  diceRemaining: number;       // The score accumulated so far in this turn.
+  turnScore: number;        // ✅ Total points accumulated during this turn (should persist across rolls).
+  diceRemaining: number;    // ✅ How many dice the player has left to roll.
+  rolls: {                 // ✅ Track all rolls made during this turn.
+    diceRolled: number[];
+    pointsEarned: number;
+  }[];
 }
+
 
 // Define an interface for each history entry (each move or action).
 export interface IHistory {
