@@ -58,7 +58,7 @@ const gameResolvers = {
 
   Mutation: {
     // Mutation resolver for creating a new game.
-    createGame: async (_parent: any, args: { input: { gameId?: string; targetScore: number } }, _context: any) => {
+    createGame: async (_parent: any, args: { input: { gameId?: string; targetScore: number } }, context: any) => {
       try {
         // Destructure input values from the args.
         const { gameId, targetScore } = args.input;
@@ -70,7 +70,16 @@ const gameResolvers = {
           gameId: gameId || `game_${new Date().getTime()}`, // Generate a gameId if none is provided.
           targetScore,
           status: "waiting",       // The game starts in the "waiting" state.
-          players: [],             // No players have joined yet.
+          players: [
+            {
+              userId: context.user._id, // Automatically add the game creator
+              username: context.user.username,
+              totalScore: 0,
+              turnScore: 0,
+              order: 1, // Creator is always the first player
+              isActive: false, // Becomes active when the game starts
+            }
+          ],             // No players have joined yet.
           history: []              // No actions recorded yet.
           // createdAt and updatedAt are handled by default values and the pre-save hook.
         });

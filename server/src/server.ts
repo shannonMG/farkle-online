@@ -16,6 +16,7 @@ import { verifyToken } from './utils/auth.js';
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  
 });
 
 const startApolloServer = async () => {

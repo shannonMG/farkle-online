@@ -6,16 +6,33 @@ const invitationTypeDefs = gql`
 type Invitation {
     _id: ID!
     gameId: ID!
-    inviterId: ID!
+    inviterId: User!
     inviteeId: ID!
     status: String!
     createdAt: String!
     updatedAt: String!
   }
+type User {
+    _id: ID!
+    username: String!
+  }
   
+input InvitationInput {
+  gameId: String!
+  inviteeUsername: String!
+  inviteeId: ID! # ✅ Ensure this is included
+  
+}
+
+  
+  extend type Query{
+    getPendingInvitations: [Invitation!]!
+  }
+
   extend type Mutation {
-    sendInvitation(gameId: ID!, inviteeUsername: String!): Invitation!
+    sendInvitation(input: InvitationInput!): Invitation!
     acceptInvitation(invitationId: ID!): Invitation!
+    declineInvitation(invitationId: ID!): Invitation!
   }
   `
 
