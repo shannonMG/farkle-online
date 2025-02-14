@@ -85,6 +85,27 @@ const notificationResolvers = {
 
       return updatedNotification;
     },
+
+    markAllNotificationsAsRead: async ( 
+        _parent: any,
+        args: { notificationId: string },
+        context: Context) => {
+        if (!context.user?._id) {
+          throw new AuthenticationError("You must be logged in to mark notifications as read.");
+        }
+        console.log( args )
+      
+        // Update all unread notifications for this user
+        await Notification.updateMany(
+          { userId: context.user._id, isRead: false },
+          { $set: { isRead: true } }
+        );
+      
+        // Return the updated list (or just the count, or a success message)
+        return Notification.find({ userId: context.user._id }).sort({ createdAt: -1 });
+      },
+      
+
   },
 };
 

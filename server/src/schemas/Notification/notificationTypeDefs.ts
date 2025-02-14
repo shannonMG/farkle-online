@@ -24,6 +24,7 @@ type Notification {
     
   extend type Mutation {
     markNotificationAsRead(notificationId: ID!): Notification!
+    markAllNotificationsAsRead: [Notification!]!
   }       
   `
   export default notificationTypeDefs;
