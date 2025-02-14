@@ -39,6 +39,7 @@ interface Context {
           throw new GraphQLError("Failed to fetch pending invitations.");
         }
       }
+      
     },
 
     Mutation: {
