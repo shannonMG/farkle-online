@@ -147,22 +147,13 @@ const userResolvers = {
       // Return the token and the user document to the client.
       return { token, user };
     },
-    logout: async (_parent: any, _args: any, context: Context): Promise<{ message: string }> => {
-      // Ensure that the user is logged in by checking the context.
+    logout: async (_parent: any, _args: any, context: Context) => {
       if (!context.user) {
-        // If there is no user in the context, throw an authentication error.
         throw new AuthenticationError("You must be logged in to logout.");
       }
-
-      // In a stateless JWT setup, there's typically no server-side state to clear.
-      // The client should simply delete the token to "log out."
-      // If you're using cookies for token storage, you could also clear the cookie here.
       console.log("🔒 User logged out:", context.user.username);
-
-      // Return a success message.
       return { message: "Logout successful" };
     },
-
   },
 };
 

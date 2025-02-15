@@ -57,12 +57,13 @@ const Dashboard = () => {
   }
 
   // Function to handle logout
+
   const handleLogout = async () => {
     try {
       await logoutUser();
-      localStorage.removeItem("id_token"); // ✅ Clear token
-      navigate("/login"); // ✅ Redirect to login page
-      window.location.reload(); // ✅ Force refresh to clear cached data
+      localStorage.removeItem("id_token");
+      navigate("/login");
+      window.location.reload();
     } catch (err) {
       console.error("Logout failed:", err);
     }

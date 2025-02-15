@@ -12,6 +12,10 @@ const userTypeDefs = gql`
         user: User!
     }
 
+    type LogoutResponse {
+        message: String!
+     }
+
     type Query {
         users: [User]
         me: User
@@ -21,7 +25,7 @@ const userTypeDefs = gql`
     type Mutation {
         register(username: String!, email: String!, password: String!): AuthPayload!
         login(username: String!, password: String!): AuthPayload!
-        logout: Boolean  
+        logout: LogoutResponse!
     }
 `;
 

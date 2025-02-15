@@ -71,7 +71,7 @@ const gameTypeDefs = gql`
         startGame(gameId: String!): Game
         rollDice(gameId: String!): Game
         endTurn(gameId: ID!): Game
-
+        leaveGame(gameId: ID!): Game!
         }
      `
 

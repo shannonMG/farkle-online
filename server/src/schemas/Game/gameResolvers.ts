@@ -14,6 +14,11 @@ interface Context {
     };
   }
 
+  interface LeaveGameArgs {
+    gameId: string;
+  }
+  
+
 const gameResolvers = {
   Query: {
     // Resolver to fetch a single game by its gameId.
@@ -185,8 +190,6 @@ const gameResolvers = {
       const updatedGame = await game.save();
       return updatedGame;
     },
-    
-    
 
     rollDice: async (_parent: any, args: { gameId: string }, context: { user?: { _id: any } }) => {
       try {
@@ -342,6 +345,41 @@ const gameResolvers = {
       }
     },
     
+    leaveGame: async (_parent: any, args: LeaveGameArgs, context: Context) => {
+      const { gameId } = args;
+
+      // 1. Ensure the user is authenticated
+      if (!context.user || !context.user._id) {
+        throw new AuthenticationError("You must be logged in to leave a game.");
+      }
+
+      // 2. Find the game
+      let game = await Game.findOne({ _id: gameId });
+      if (!game) {
+        throw new GraphQLError("Game not found.");
+      }
+
+      // 3. Check if the user is actually a player in this game
+      const isPlayerInGame = game.players.some(
+        (player) => player.userId.toString() === context.user!._id.toString()
+      );
+      if (!isPlayerInGame) {
+        throw new GraphQLError("You are not a player in this game.");
+      }
+
+      // 4. Remove the player from the game
+      //    (Assuming `game.players` is an array of { userId, ... })
+      game.players = game.players.filter(
+        (player) => player.userId.toString() !== context.user!._id.toString()
+      );
+
+
+      // 6. Save the updated game
+      await game.save();
+
+      // 7. Return the updated game
+      return game;
+    },
     
     
   },

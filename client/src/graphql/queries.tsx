@@ -19,7 +19,6 @@ export const GET_USERS = gql`
   }
 `;
 
-
 export const GET_GAMES_BY_USER = gql`
   query GetGamesByUser {
     gamesByUser {
@@ -32,3 +31,34 @@ export const GET_GAMES_BY_USER = gql`
     }
   }
 `;
+
+export const GET_PENDING_INVITATIONS = gql`
+  query GetPendingInvitations {
+    getPendingInvitations {
+      _id
+      gameId
+      inviterId {
+        _id
+        username
+        email
+      }
+      inviteeId
+      status
+      createdAt
+      updatedAt
+    }
+}
+`
+
+export const GET_MY_NOTIFICATIONS = gql`
+query GetMyNotifications($filter: NotificationFilterInput) {
+  getMyNotifications(filter: $filter) {
+    _id
+    userId
+    type
+    message
+    isRead
+    createdAt
+  }
+}
+`
