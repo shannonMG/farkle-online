@@ -19,6 +19,7 @@ const userTypeDefs = gql`
     type Query {
         users: [User]
         me: User
+        gamesByUser(userId: ID!): [Game]
     }
 
 

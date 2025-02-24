@@ -5,6 +5,9 @@ import { IPlayer } from '../../models/Game.js';
 import { AuthenticationError } from 'apollo-server-errors';
 // import { Invitation } from '../../models/Invitation.js';
 import { rollDice, evaluateRoll, endTurn } from '../../utils/farkleUtils.js'
+import mongoose from 'mongoose';
+
+
 
 interface Context {
     user?: {
@@ -59,7 +62,31 @@ const gameResolvers = {
         throw new GraphQLError("Failed to fetch games.");
       }
     },
+
+    gamesInProgressByUser: async (_: any, { userId }: { userId: string }) => {
+      console.log("🔍 Fetching games for user:", userId);
+
+      try {
+        const objectIdUserId = new mongoose.Types.ObjectId(userId); // Convert to ObjectId
+
+        const allGames = await Game.find({
+          "players.userId": objectIdUserId, // Ensure it matches ObjectId format
+          status: "inProgress"
+        }).lean();
+
+        console.log("📊 Full gamesData response:", allGames);
+        console.log("🛠 gamesByUser:", allGames);
+        return allGames.map(game => ({
+          ...game,
+          gameId: game._id.toString() // ✅ Converts `_id` to `gameId`
+        }));
+      } catch (error) {
+        console.error("❌ Error fetching games:", error);
+        return [];
+      }
+    }
   },
+
 
   Mutation: {
     // Mutation resolver for creating a new game.
@@ -386,3 +413,6 @@ const gameResolvers = {
 }
 export const { joinGame } = gameResolvers.Mutation;
 export default gameResolvers;
+
+
+

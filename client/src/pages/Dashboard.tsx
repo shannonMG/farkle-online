@@ -1,62 +1,55 @@
-import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_ME, GET_GAMES_BY_USER } from "../graphql/queries"; // ✅ Added GET_GAMES_BY_USER
+import { GET_ME, GET_GAMES_IN_PROGRESS_BY_USER, GET_PENDING_INVITATIONS } from "../graphql/queries";
 import { LOGOUT_USER } from "../graphql/mutations";
 import { useNavigate } from "react-router-dom";
 import AddGameForm from "../components/AddGameForm";
-import GameCard from "../components/GameCard"; // ✅ Import GameCard component
+import GameCard from "../components/GameCard";
+import InvitationCard from "../components/InvitationCard";
+import { useState } from "react";
+import styles from "./Dashboard.module.css";
 
 interface Game {
   _id: string;
   status: string;
-  participants: {
+  players: {
     _id: string;
     username: string;
   }[];
 }
 
+interface User {
+  _id: string;
+  username: string;
+}
 
+interface Invitation {
+  _id: string;
+  gameId: string;
+  inviterId: User;
+  inviteeId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { loading, error, data } = useQuery(GET_ME);
-  const { loading: gamesLoading, error: gamesError, data: gamesData } = useQuery(GET_GAMES_BY_USER); // ✅ Fetch user games
+  const user = data?.me;
+
+  const { loading: gamesLoading, error: gamesError, data: gamesData } = useQuery(GET_GAMES_IN_PROGRESS_BY_USER, {
+    variables: { userId: user?._id },
+    skip: !user?._id,
+    fetchPolicy: "network-only",
+  });
+
+  const { loading: invitationsLoading, error: invitationsError, data: invitationsData } = useQuery(GET_PENDING_INVITATIONS);
+
   const [logoutUser] = useMutation(LOGOUT_USER);
   const [showForm, setShowForm] = useState(false);
 
   if (loading) return <p>Loading...</p>;
-  if (error) {
-    console.error("🚨 Error fetching user data:", error);
-    return (
-      <div>
-        <p>Error loading data. Please try logging in again.</p>
-        <button onClick={() => {
-          localStorage.removeItem("id_token");
-          navigate("/login");
-        }}>
-          Return to Login
-        </button>
-      </div>
-    );
-  }
-
-  const user = data?.me;
-
-  if (!user) {
-    return (
-      <div>
-        <p>User not found. Please log in again.</p>
-        <button onClick={() => {
-          localStorage.removeItem("id_token");
-          navigate("/login");
-        }}>
-          Return to Login
-        </button>
-      </div>
-    );
-  }
-
-  // Function to handle logout
+  if (error) return <p>Error: {error.message}</p>;
 
   const handleLogout = async () => {
     try {
@@ -71,29 +64,62 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>Welcome, {user.username}!</h1>
+      <h1>Welcome, {user?.username}!</h1>
 
       <button onClick={() => setShowForm(true)}>Add Game</button>
 
       {showForm && <AddGameForm onClose={() => setShowForm(false)} />}
 
-      {/* ✅ Display Active Games */}
+      {/* Display Active Games */}
       <h2>Your Active Games</h2>
       {gamesLoading && <p>Loading your games...</p>}
       {gamesError && <p>Error loading games: {gamesError.message}</p>}
-      {gamesData?.gamesByUser?.length > 0 ? (
-        gamesData.gamesByUser.map((game: Game) => (
-          <GameCard key={game._id} game={game} currentUserId={user._id} />
-        ))
-      ) : (
-        <p>You are not in any active games.</p>
-      )}
+
+      <div className={styles.gameListContainer}>
+        {gamesData?.gamesInProgressByUser?.length > 0 ? (
+          <div className={styles.gameList}>
+            {gamesData.gamesInProgressByUser.map((game: Game) => (
+              <GameCard
+                key={game._id}
+                game={{
+                  gameId: game._id,
+                  status: game.status,
+                  players: game.players.map(player => ({
+                    userId: player._id,
+                    username: player.username,
+                  })),
+                }}
+                currentUserId={user._id}
+              />
+            ))}
+          </div>
+        ) : (
+          <p>You are not in any active games.</p>
+        )}
+      </div>
+
+      <h2>Pending Invitations</h2>
+      {invitationsLoading && <p>Loading invitations...</p>}
+      {invitationsError && <p>Error loading invitations: {invitationsError.message}</p>}
+
+      <div className={styles.invitationListContainer}>
+        <div className = {styles.invitationList}>
+        {invitationsData?.getPendingInvitations?.length > 0 ? (
+          
+          invitationsData.getPendingInvitations.map((invitation: Invitation) => (
+            <InvitationCard key={invitation._id} invitation={invitation} />
+          ))
+        ) : (
+          <p>You have no pending invitations.</p>
+        )}
+      </div>
 
       {/* Logout Button */}
       <button onClick={handleLogout} style={{ cursor: "pointer", marginTop: "20px" }}>
         Logout
       </button>
-    </div>
+        </div>
+       </div>
   );
 };
 

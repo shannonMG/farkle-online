@@ -38,6 +38,7 @@ const gameTypeDefs = gql`
 
     # Define the Game type that corresponds to your IGame interface.
     type Game {
+        _id: ID!
         gameId: String!
         createdAt: String!  
         updatedAt: String!
@@ -62,6 +63,8 @@ const gameTypeDefs = gql`
     type Query {
         game(gameId: String!): Game
         games(status: String): [Game!]!
+        gamesInProgressByUser(userId: ID!): [Game]
+
         }
         
     

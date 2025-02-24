@@ -1,9 +1,15 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import type { User } from "./User";
 
 // Define an interface for the invitation document.
+export interface User {
+  _id: string;
+  username: string;
+}
+
 export interface IInvitation extends Document {
   gameId: string;      // Reference to the associated game.
-  inviterId: mongoose.Types.ObjectId;   // Reference to the user who is sending the invitation.
+  inviterId: mongoose.Types.ObjectId | User;   // Reference to the user who is sending the invitation.
   inviteeId: mongoose.Types.ObjectId;   // Reference to the user who is being invited.
   status: "pending" | "accepted" | "declined";  // Current status of the invitation.
   createdAt: Date;                      // Timestamp when the invitation was created.

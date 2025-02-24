@@ -1,0 +1,45 @@
+.gameListContainer {
+    width: 100%;
+    overflow-x: auto; /* ✅ Enable horizontal scrolling */
+    white-space: nowrap; /* ✅ Prevent wrapping */
+    padding: 10px 0;
+  }
+  
+  .gameList {
+    display: flex;
+    gap: 15px; /* ✅ Add spacing between games */
+    min-width: max-content; /* ✅ Ensure games fit properly */
+  }
+  
+  .gameCard {
+    flex: 0 0 auto; /* ✅ Prevent games from shrinking */
+    width: 250px; /* ✅ Adjust card width */
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #f9f9f9;
+  }
+  
+  .invitationListContainer {
+    width: 100%;
+    overflow-x: auto; /* ✅ Enable horizontal scrolling */
+    white-space: nowrap; /* ✅ Prevent wrapping */
+    padding: 10px 0;
+  }
+  
+  .invitationList {
+    display: flex;
+    gap: 15px; /* ✅ Add spacing between games */
+    min-width: max-content; /* ✅ Ensure games fit properly */
+  }
+
+  .invitationCard {
+    flex: 0 0 auto; /* ✅ Prevents cards from shrinking */
+    width: 250px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #f9f9f9;
+  }

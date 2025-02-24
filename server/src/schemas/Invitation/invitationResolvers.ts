@@ -18,22 +18,31 @@ interface Context {
 
   const invitationResolvers = {
     Query: {
-      getPendingInvitations: async (_parent: any, args: any, context: Context) => {
-        console.log("🛠️ Checking authenticated user in getPendingInvitations:", context.user);
-        console.log("🔍 Debugging inviteeId:", args.input.inviteeId);
-        // Ensure the user is authenticated
+      getPendingInvitations: async (_parent: any, _args: any, context: Context) => {
         if (!context.user || !context.user._id) {
           throw new AuthenticationError("You must be logged in to view pending invitations.");
         }
-      
+  
         try {
-          // Find all pending invitations for the logged-in user
           const pendingInvitations = await Invitation.find({
             inviteeId: context.user._id,
             status: "pending"
-          }).populate("inviterId", "username"); // Populate inviter details
-      
-          return pendingInvitations;
+          }).populate("inviterId", "_id username"); // ✅ Ensure inviterId is populated
+  
+          console.log("📊 Pending Invitations from DB:", pendingInvitations);
+  
+          return pendingInvitations.map(invite => ({
+            _id: invite._id,
+            gameId: invite.gameId,
+            inviterId: invite.inviterId && typeof invite.inviterId === "object" ? { 
+              _id: (invite.inviterId as any)._id, 
+              username: (invite.inviterId as any).username 
+            } : null, // ✅ Ensure inviterId is an object
+            inviteeId: invite.inviteeId,
+            status: invite.status,
+            createdAt: invite.createdAt,
+            updatedAt: invite.updatedAt,
+          }));
         } catch (error) {
           console.error("Error fetching pending invitations:", error);
           throw new GraphQLError("Failed to fetch pending invitations.");
