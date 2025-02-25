@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.jsx'; // Layout Wrapper
 import Signup from './pages/Signup.js';
 import Login from './pages/Login.js';
+import GameLobby from './pages/GameLobby.js';
 import Dashboard from './pages/Dashboard.js';
 
 const router = createBrowserRouter([
@@ -26,7 +27,12 @@ const router = createBrowserRouter([
             {
                 path: '/me',
                 element: <Dashboard />
-            }
+            },
+            {
+                path: '/game/:gameId', // ✅ Add the Game Lobby route
+                element: <GameLobby />
+            },
+            
         ]
     }
 ]);

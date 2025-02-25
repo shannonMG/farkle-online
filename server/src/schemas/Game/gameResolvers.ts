@@ -17,11 +17,6 @@ interface Context {
     };
   }
 
-  interface LeaveGameArgs {
-    gameId: string;
-  }
-  
-
 const gameResolvers = {
   Query: {
     // Resolver to fetch a single game by its gameId.
@@ -64,27 +59,63 @@ const gameResolvers = {
     },
 
     gamesInProgressByUser: async (_: any, { userId }: { userId: string }) => {
-      console.log("🔍 Fetching games for user:", userId);
+      
 
       try {
-        const objectIdUserId = new mongoose.Types.ObjectId(userId); // Convert to ObjectId
+        // const objectIdUserId = new mongoose.Types.ObjectId(userId); // Convert to ObjectId
 
         const allGames = await Game.find({
-          "players.userId": objectIdUserId, // Ensure it matches ObjectId format
+          "players.userId":userId, // Ensure it matches ObjectId format
           status: "inProgress"
         }).lean();
 
-        console.log("📊 Full gamesData response:", allGames);
-        console.log("🛠 gamesByUser:", allGames);
-        return allGames.map(game => ({
-          ...game,
-          gameId: game._id.toString() // ✅ Converts `_id` to `gameId`
-        }));
+    
+        return allGames.map((game: any) => {
+          const typedGame = game as { _id: mongoose.Types.ObjectId };
+          return {
+            ...typedGame,
+            gameId: typedGame._id.toString() // ✅ Converts `_id` to `gameId`
+          };
+        });
       } catch (error) {
         console.error("❌ Error fetching games:", error);
         return [];
       }
-    }
+    },
+
+    getGameById: async (_: any, { gameId }: { gameId: string }) => {
+      console.log("🛠 Fetching game details for Game ID:", gameId);
+
+      if (!mongoose.Types.ObjectId.isValid(gameId)) {
+        console.error("❌ Invalid Game ID:", gameId);
+        throw new GraphQLError("Invalid game ID format.");
+      }
+
+      try {
+        const game = await Game.findById(gameId).populate("players.userId", "username").exec();
+        if (!game) {
+          console.error("❌ Game not found with ID:", gameId);
+          throw new GraphQLError("Game not found.");
+        }
+
+        console.log("✅ Game found:", game);
+        
+        return {
+          gameId: game._id,
+          status: game.status,
+          players: game.players.map(player => ({
+            userId: player.userId._id.toString(),
+            username: (player.userId as any).username,
+          })),
+        };
+      } catch (error) {
+        console.error("❌ Error fetching game:", error);
+        throw new GraphQLError("Failed to fetch game details.");
+      }
+    },
+
+
+    
   },
 
 
@@ -372,7 +403,7 @@ const gameResolvers = {
       }
     },
     
-    leaveGame: async (_parent: any, args: LeaveGameArgs, context: Context) => {
+    leaveGame: async (_parent: any, args: {gameId: string}, context: Context) => {
       const { gameId } = args;
 
       // 1. Ensure the user is authenticated
@@ -381,7 +412,7 @@ const gameResolvers = {
       }
 
       // 2. Find the game
-      let game = await Game.findOne({ _id: gameId });
+      let game = await Game.findOne({ _id: gameId }); 
       if (!game) {
         throw new GraphQLError("Game not found.");
       }

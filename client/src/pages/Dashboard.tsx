@@ -9,6 +9,7 @@ import { useState } from "react";
 import styles from "./Dashboard.module.css";
 
 interface Game {
+  gameId: string;
   _id: string;
   status: string;
   players: {
@@ -62,7 +63,12 @@ const Dashboard = () => {
     }
   };
 
+  console.log("🎯 Games Data from GraphQL:", gamesData);
+
+
   return (
+
+    
     <div>
       <h1>Welcome, {user?.username}!</h1>
 
@@ -73,53 +79,60 @@ const Dashboard = () => {
       {/* Display Active Games */}
       <h2>Your Active Games</h2>
       {gamesLoading && <p>Loading your games...</p>}
-      {gamesError && <p>Error loading games: {gamesError.message}</p>}
+      {gamesError && <p>Error loading games: {gamesError.message}</p>
+      }
+
+      
 
       <div className={styles.gameListContainer}>
-        {gamesData?.gamesInProgressByUser?.length > 0 ? (
-          <div className={styles.gameList}>
-            {gamesData.gamesInProgressByUser.map((game: Game) => (
-              <GameCard
-                key={game._id}
-                game={{
-                  gameId: game._id,
-                  status: game.status,
-                  players: game.players.map(player => ({
-                    userId: player._id,
-                    username: player.username,
-                  })),
-                }}
-                currentUserId={user._id}
-              />
-            ))}
-          </div>
-        ) : (
-          <p>You are not in any active games.</p>
-        )}
-      </div>
+      {gamesData?.gamesInProgressByUser?.length > 0 ? (
+  <div className={styles.gameList}>
+    {gamesData.gamesInProgressByUser.map((game: Game) => {
+      console.log("🔍 Processing Game Data (before passing to GameCard):", game); // ✅ Log each game object
+
+      return (
+        <GameCard
+          key={game.gameId || game._id} // ✅ Use gameId or _id
+          game={{
+            gameId: game.gameId || game._id, // ✅ Use correct field
+            status: game.status,
+            players: game.players ? game.players.map(player => ({
+              userId: String(player._id),
+              username: player.username,
+            })) : [], // ✅ Ensure players is an array
+          }}
+          currentUserId={user._id}
+        />
+      );
+    })}
+  </div>
+) : (
+  <p>You are not in any active games.</p>
+)}
+
+</div>
 
       <h2>Pending Invitations</h2>
       {invitationsLoading && <p>Loading invitations...</p>}
       {invitationsError && <p>Error loading invitations: {invitationsError.message}</p>}
 
       <div className={styles.invitationListContainer}>
-        <div className = {styles.invitationList}>
-        {invitationsData?.getPendingInvitations?.length > 0 ? (
-          
-          invitationsData.getPendingInvitations.map((invitation: Invitation) => (
-            <InvitationCard key={invitation._id} invitation={invitation} />
-          ))
-        ) : (
-          <p>You have no pending invitations.</p>
-        )}
+        <div className={styles.invitationList}>
+          {invitationsData?.getPendingInvitations?.length > 0 ? (
+            invitationsData.getPendingInvitations.map((invitation: Invitation) => (
+              <InvitationCard key={invitation._id} invitation={invitation} />
+            ))
+          ) : (
+            <p>You have no pending invitations.</p>
+          )}
+        </div>
       </div>
 
       {/* Logout Button */}
       <button onClick={handleLogout} style={{ cursor: "pointer", marginTop: "20px" }}>
         Logout
       </button>
-        </div>
-       </div>
+    </div>
   );
 };
 

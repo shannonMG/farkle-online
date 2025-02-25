@@ -64,6 +64,8 @@ const gameTypeDefs = gql`
         game(gameId: String!): Game
         games(status: String): [Game!]!
         gamesInProgressByUser(userId: ID!): [Game]
+        getGameById(gameId: ID!): Game
+
 
         }
         

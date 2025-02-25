@@ -316,41 +316,10 @@ mutation MarkAllNotificationsAsRead {
 `
 
 export const LEAVE_GAME = gql`
-mutation LeaveGame($gameId: ID!) {
-  leaveGame(gameId: $gameId) {
-    gameId
-    createdAt
-    updatedAt
-    status
-    targetScore
-    players {
-      userId
-      username
-      totalScore
-      turnScore
-      order
-      isActive
-    }
-    currentTurn {
-      playerId
-      rollCount
-      dice
-      selectedDice
-      turnScore
-      diceRemaining
-      rolls {
-        diceRolled
-        pointsEarned
-      }
-    }
-    history {
-      turnNumber
-      playerId
-      action
-      diceRolled
-      pointsEarned
-      timestamp
+  mutation LeaveGame($gameId: ID!) {
+    leaveGame(gameId: $gameId) {
+      _id
+      status
     }
   }
-}
-`
+`;

@@ -86,3 +86,16 @@ query GetMyNotifications($filter: NotificationFilterInput) {
   }
 }
 `
+
+export const GET_GAME_BY_ID = gql`
+  query GetGameById($gameId: ID!) {
+    getGameById(gameId: $gameId) {
+      gameId
+      status
+      players {
+        userId
+        username
+      }
+    }
+  }
+`;
