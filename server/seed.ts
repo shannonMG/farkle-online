@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { User } from "./src/models/User.js"
-import { Game } from "./src/models/Game.js"
-import { Invitation } from "./src/models/Invitation.js"
-import { Notification } from "./src/models/Notification.js"
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
+import { User } from "./src/models/User.js";
+import { Game } from "./src/models/Game.js";
+import { Invitation } from "./src/models/Invitation.js";
+import { Notification } from "./src/models/Notification.js";
 
 dotenv.config();
 
@@ -26,6 +26,7 @@ const seedDatabase = async () => {
       bcrypt.hash("password123", 10),
       bcrypt.hash("password123", 10),
       bcrypt.hash("password123", 10),
+      bcrypt.hash("password123", 10),
     ]);
 
     console.log("👥 Seeding users...");
@@ -33,24 +34,60 @@ const seedDatabase = async () => {
       { username: "player1", email: "player1@example.com", password: hashedPasswords[0] },
       { username: "player2", email: "player2@example.com", password: hashedPasswords[1] },
       { username: "player3", email: "player3@example.com", password: hashedPasswords[2] },
+      { username: "player4", email: "player4@example.com", password: hashedPasswords[3] },
     ]);
 
     console.log("🎲 Seeding games...");
     const games = await Game.insertMany([
+      // Game waiting for players
       {
         gameId: new mongoose.Types.ObjectId(),
         status: "waiting",
         targetScore: 10000,
-        players: [{ userId: users[0]._id, username: users[0].username, order: 1 }],
+        players: [
+          { userId: users[0]._id, username: users[0].username, order: 1, isActive: false },
+        ],
       },
+      // In-progress game with two players (Turn assigned)
       {
         gameId: new mongoose.Types.ObjectId(),
         status: "inProgress",
         targetScore: 10000,
         players: [
-          { userId: users[1]._id, username: users[1].username, order: 1 },
-          { userId: users[2]._id, username: users[2].username, order: 2 },
+          { userId: users[1]._id, username: users[1].username, order: 1, isActive: true },
+          { userId: users[2]._id, username: users[2].username, order: 2, isActive: false },
         ],
+        currentTurn: {
+          playerId: users[1]._id.toString(),
+          rollCount: 0,
+          dice: [],
+          selectedDice: [],
+          turnScore: 0,
+          diceRemaining: 6,
+          rolls: [],
+        },
+        history: [],
+      },
+      // Another in-progress game with 3 players
+      {
+        gameId: new mongoose.Types.ObjectId(),
+        status: "inProgress",
+        targetScore: 10000,
+        players: [
+          { userId: users[3]._id, username: users[3].username, order: 1, isActive: true },
+          { userId: users[0]._id, username: users[0].username, order: 2, isActive: false },
+          { userId: users[2]._id, username: users[2].username, order: 3, isActive: false },
+        ],
+        currentTurn: {
+          playerId: users[3]._id.toString(),
+          rollCount: 0,
+          dice: [],
+          selectedDice: [],
+          turnScore: 0,
+          diceRemaining: 6,
+          rolls: [],
+        },
+        history: [],
       },
     ]);
 

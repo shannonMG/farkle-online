@@ -65,9 +65,12 @@ const gameTypeDefs = gql`
         games(status: String): [Game!]!
         gamesInProgressByUser(userId: ID!): [Game]
         getGameById(gameId: ID!): Game
+        getActivePlayer(gameId: ID!): Player
+}
 
 
-        }
+
+        
         
     
     type Mutation {

@@ -114,7 +114,34 @@ const gameResolvers = {
       }
     },
 
-
+    getActivePlayer: async (_: any, { gameId }: { gameId: string }) => {
+      try {
+        console.log("🔍 Fetching active player for Game ID:", gameId);
+    
+        // Find the game and populate the players
+        const game = await Game.findById(gameId).populate({ path: "players.userId", select: "username" });
+    
+        if (!game) {
+          throw new Error("Game not found.");
+        }
+    
+        // Find the active player in the players array
+        const activePlayer = game.players.find(player => player.isActive);
+    
+        if (!activePlayer) {
+          throw new Error("No active player for this game.");
+        }
+    
+        return {
+          userId: activePlayer.userId._id.toString(),  // Ensure ObjectId is a string
+          username: (activePlayer.userId as any).username,
+        };
+      } catch (error) {
+        console.error("❌ Error fetching active player:", error);
+        throw new Error("Failed to get active player.");
+      }
+    },
+    
     
   },
 
@@ -264,6 +291,7 @@ const gameResolvers = {
           throw new GraphQLError("Game is not in progress.");
         }
         if (!game.currentTurn) {
+          console.log("🛑 No current turn found! Game State:", game);
           throw new GraphQLError("No current turn is set.");
         }
 
@@ -403,7 +431,7 @@ const gameResolvers = {
       }
     },
     
-    leaveGame: async (_parent: any, args: {gameId: string}, context: Context) => {
+    leaveGame: async (_parent: any, args: { gameId: string }, context: Context) => {
       const { gameId } = args;
 
       // 1. Ensure the user is authenticated
