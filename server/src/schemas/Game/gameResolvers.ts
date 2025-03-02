@@ -281,51 +281,50 @@ const gameResolvers = {
         if (!context.user) {
           throw new GraphQLError("You must be logged in to roll the dice.");
         }
-
-        // Retrieve the game document.
+    
+        // 🔍 Fetch the game
         const game = await Game.findOne({ gameId: args.gameId });
         if (!game) {
           throw new GraphQLError("Game not found.");
         }
+    
         if (game.status !== "inProgress") {
           throw new GraphQLError("Game is not in progress.");
         }
+    
         if (!game.currentTurn) {
-          console.log("🛑 No current turn found! Game State:", game);
-          throw new GraphQLError("No current turn is set.");
+          throw new GraphQLError("No active turn is set.");
         }
-
-        // Ensure the correct player is rolling
+    
+        // Ensure it's the player's turn
         if (context.user._id.toString() !== game.currentTurn.playerId) {
-          throw new GraphQLError("It's not your turn. Please wait for your turn.");
+          throw new GraphQLError("It's not your turn.");
         }
-
-        // Number of dice to roll
+    
+        // 🔢 Number of dice to roll
         const numDice: number = game.currentTurn.diceRemaining || 6;
-
-        // Roll the dice
-        const diceResults: number[] = rollDice(numDice);
-        console.log("Dice results:", diceResults);
-
-        // Evaluate roll
+        const diceResults: number[] = rollDice(numDice); // Function that generates random dice rolls
+        console.log("🎲 Dice results:", diceResults);
+    
+        // ✅ Evaluate roll (calculate score & identify scoring dice)
         const { rollScore, scoringDiceCount } = evaluateRoll(diceResults);
-        console.log("Roll evaluation:", { rollScore, scoringDiceCount });
-
-        // ✅ Ensure `rolls` array exists before pushing a new roll
+        console.log("📊 Roll evaluation:", { rollScore, scoringDiceCount });
+    
+        // ✅ Ensure `rolls` array exists before storing the roll
         if (!game.currentTurn.rolls) {
           game.currentTurn.rolls = [];
         }
-
-        // ✅ Store roll in the turn's roll history
+    
+        // ✅ Store roll in the turn's history
         game.currentTurn.rolls.push({
           diceRolled: diceResults,
           pointsEarned: rollScore,
         });
-
+    
         // 🚨 **Handle Farkle (0 points rolled)**
         if (rollScore === 0) {
-          console.log("Farkle detected! Ending turn.");
-
+          console.log("⚠️ Farkle detected! Ending turn.");
+    
           // Add Farkle history entry
           game.history.push({
             turnNumber: game.history.length + 1,
@@ -335,21 +334,26 @@ const gameResolvers = {
             pointsEarned: 0,
             timestamp: new Date(),
           });
-
+    
           // Reset turnScore since farkling loses all accumulated points
           game.currentTurn.turnScore = 0;
-
+    
           // Move to next player
           const currentPlayerIndex = game.players.findIndex(
             (player) => player.userId.toString() === game.currentTurn!.playerId
           );
-
+    
           if (currentPlayerIndex === -1) {
             throw new GraphQLError("Active player not found in the game.");
           }
-
+    
           // Set next player (circular order)
           const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length;
+
+          game.players.forEach((player, index) => {
+            player.isActive = index === nextPlayerIndex;  // Set new player as active
+          });
+
           game.currentTurn = {
             playerId: game.players[nextPlayerIndex].userId.toString(),
             rollCount: 0,
@@ -359,23 +363,23 @@ const gameResolvers = {
             diceRemaining: 6, // Reset to 6 for new turn
             rolls: [] // ✅ Reset rolls for new turn
           };
-
-          // **Save and return updated game state (to reflect new turn)**
+    
+          // ✅ Save and return updated game state (to reflect new turn)
           const updatedGame = await game.save();
           return updatedGame;
         }
-
+    
         // ✅ **Accumulate turnScore across rolls**
         game.currentTurn.turnScore += rollScore;
-
-        // Update remaining dice
+    
+        // ✅ Update remaining dice count
         let newDiceRemaining = numDice - scoringDiceCount;
         if (newDiceRemaining === 0) {
           newDiceRemaining = 6; // Hot dice rule
         }
         game.currentTurn.diceRemaining = newDiceRemaining;
-
-        // Add roll history
+    
+        // ✅ Add roll history
         game.history.push({
           turnNumber: game.history.length + 1,
           playerId: game.currentTurn.playerId,
@@ -384,16 +388,17 @@ const gameResolvers = {
           pointsEarned: rollScore,
           timestamp: new Date(),
         });
-
-        // **Save and return updated game**
+    
+        // ✅ Save and return updated game
         const updatedGame = await game.save();
         return updatedGame;
-
+    
       } catch (error) {
-        console.error("Error in rollDice mutation:", error);
+        console.error("❌ Error in rollDice mutation:", error);
         throw new GraphQLError("Failed to roll dice.");
       }
     },
+    
 
     endTurn: async (_parent: any, args: { gameId: string }, context: { user?: { _id: any } }) => {
       try {
@@ -466,6 +471,11 @@ const gameResolvers = {
       // 7. Return the updated game
       return game;
     },
+
+   
+  
+
+
     
     
   },

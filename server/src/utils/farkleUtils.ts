@@ -86,6 +86,7 @@ export function evaluateRoll(dice: number[]): { rollScore: number; scoringDiceCo
 
   return { rollScore: score, scoringDiceCount };
 }
+
 export function endTurn(game: IGame): IGame {
   if (!game.currentTurn) {
     throw new Error("No active turn to end.");
@@ -109,17 +110,34 @@ export function endTurn(game: IGame): IGame {
   game.players[currentPlayerIndex].totalScore += game.currentTurn.turnScore;
 
   // ✅ Log the completed turn in history
+  const lastRoll = game.currentTurn.rolls.length > 0 
+    ? game.currentTurn.rolls[game.currentTurn.rolls.length - 1].diceRolled 
+    : [];
+
   game.history.push({
     turnNumber: game.history.length + 1,
     playerId: game.currentTurn.playerId,
     action: "endTurn",
-    diceRolled: game.currentTurn.dice,
+    diceRolled: lastRoll,
     pointsEarned: game.currentTurn.turnScore,
     timestamp: new Date(),
   });
 
+  // ✅ Check for a winner before moving to the next player
+  if (game.players[currentPlayerIndex].totalScore >= game.targetScore) {
+    game.status = "completed";  // 🏆 Mark game as completed
+    return game;  // Stop further processing
+  }
+
   // ✅ Move to the next player
   const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length;
+
+  // ✅ Update `isActive` for players
+  game.players.forEach((player, index) => {
+    player.isActive = index === nextPlayerIndex;  // Set new player as active
+  });
+
+  // ✅ Update currentTurn with the new active player
   game.currentTurn = {
     playerId: game.players[nextPlayerIndex].userId.toString(),
     rollCount: 0,
@@ -127,7 +145,7 @@ export function endTurn(game: IGame): IGame {
     selectedDice: [],
     turnScore: 0,
     diceRemaining: 6,
-    rolls: [] // ✅ Ensure new player starts with empty roll history
+    rolls: [],
   };
 
   return game;
